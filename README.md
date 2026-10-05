@@ -2,6 +2,14 @@
 
 ## Porting PP-OCRv6 to the Allwinner A733 / Vivante VIP9000
 
+## Reproducibility and code status
+
+This repository is being expanded from an engineering paper into a paper with a reproducible implementation guide and supporting code. The account below documents the reported production path and experiments. **The actual conversion scripts, runtime code, model provenance, and runnable commands have not yet been added to this repository.**
+
+The [implementation guide](#19-implementation-guide-and-code-to-be-added) identifies the files and steps needed to reproduce the work. Those sections must be completed from the actual implementation and checked on the target hardware before they are described as runnable instructions.
+
+The selected production path remains **NPU-supported, CPU-verified OCR**. NPU detection and eligible recognition attempts coexist with CPU recognition on every crop. The reported timings do not establish a general speed advantage over a matched CPU-only pipeline.
+
 ### Abstract
 
 This project began with a simple goal: run RapidOCR on an Orange Pi Zero 3W using its neural processing unit.
@@ -396,3 +404,101 @@ Project evidence retained with the implementation includes:
 - `NPU_MIGRATION_FOLLOWUP.md`
 
 The external references support platform and toolchain context. The OCR measurements and experiment conclusions come from the project’s own validation records, as summarized in the implementation review used to prepare this paper.
+
+## 19. Implementation Guide and Code to Be Added
+
+**Status: implementation collection in progress.** This section describes the order of work and the evidence needed for a runnable release. It is not yet an installation tutorial. Names in the proposed layout below are organizational targets; they are not files already present in the repository.
+
+### Repository layout
+
+| Proposed location | Material to recover from the working implementation |
+|---|---|
+| `docs/setup.md` | Board prerequisites, host conversion environment, dependency versions, driver/runtime installation sources, and compatibility limits. |
+| `docs/models.md` | Exact original and transformed model identity, upstream sources, character dictionary, hashes, shapes, and redistribution status. |
+| `conversion/` | Actual static-shape, graph-rewrite, calibration, quantization, compilation, and export scripts in their required order. |
+| `runtime/` | Actual VIPLite bridge, build configuration, Python interface, preprocessing, decoding, CPU verification, and lifecycle handling. |
+| `examples/` | Small OCR example using a public fixture and the selected production path. |
+| `tests/` | Numerical comparisons, simulator/hardware parity, repeated execution, failure recovery, and OCR regression checks. |
+| `benchmarks/` | Timing and CPU-consumption measurements with explicit benchmark scope. |
+| `fixtures/` | Shareable inputs, reference labels or CPU outputs, character dictionary references, and fixture hashes. |
+| `evidence/` | Shareable validation summaries linked to the exact model and software versions they test. |
+
+Only add locations that receive real, relevant files. Record unavailable material explicitly instead of creating empty code or invented commands.
+
+### Step 1 — Identify the tested baseline
+
+Recover the deployed OCR-only source and configuration from the verified project. Record the source revision or file hashes, exact NBG identities, upstream ONNX models, character dictionary, and runtime versions. Confirm the claimed PP-OCRv6 model provenance from the actual files and upstream records.
+
+Keep the production configuration distinct from earlier UINT8 recognizer exports, generated-C precision experiments, wider recognizers, and rejected full-NPU candidates. The final INT8 recognizer parameters in section 8 must not be silently mixed with another model version.
+
+### Step 2 — Prepare the conversion host and board
+
+Add the real dependency list and the exact commands used to prepare the host conversion environment and the Orange Pi runtime. Label each command with its execution location: conversion host/container or Orange Pi board. Document SDK acquisition and any dependencies readers must obtain separately.
+
+Include a read-only driver/device check and a small known-good NBG test, with expected successful output. State whether clean-board setup has actually been tested. Avoid presenting the existing development machine as proof of a reproducible fresh installation.
+
+### Step 3 — Obtain and verify model inputs
+
+Provide the exact upstream model sources, download or export steps, filenames, SHA-256 hashes, character dictionary, and license information. Document which ONNX model is the canonical CPU reference and which transformed model is compiled for the NPU.
+
+Do not upload third-party SDKs, model weights, or calibration material unless their redistribution terms permit it. Where redistribution is unavailable, document the legitimate acquisition path and expected hashes.
+
+### Step 4 — Rebuild the detector
+
+Add the actual detector conversion, calibration, export, and compiler invocations. Explain how the input is frozen to [1,3,736,736], which calibration data is used, and how tensor metadata is checked.
+
+Include the implemented resize/padding geometry, color order, normalization, NCHW layout, input quantization, output dequantization, and detection-map interpretation. Link each explanation to its source file and a test fixture.
+
+### Step 5 — Rebuild the recognizer graph
+
+Add the actual rewrite scripts in their verified execution order. For each deployed rewrite, explain the affected operations, tensor and weight mappings, padding/output geometry, and numerical comparison against the original graph.
+
+Cover the selected convolution sampling rewrites, projection replacements, any deployed Conv40 split/reconstruction, and LayerNorm changes. Identify experimental-only rewrites explicitly. Attach the original arithmetic checker scripts and isolation dumps where retained; otherwise preserve the companion-investigation attribution in section 7.
+
+### Step 6 — Quantize and compile the selected recognizer
+
+Add the actual calibration procedure and data description, input-range correction, per-channel weight settings, quantization configuration, and NBG export commands. Record how the deployed signed INT8 input and FLOAT16 output are established and verified.
+
+Publish model hashes and compiler/runtime versions alongside the output metadata. Explain any generated-C edits separately, including whether they were incorporated in the production rebuild. Do not imply the exploratory node211 FLOAT16 modification is part of the final model.
+
+### Step 7 — Build and run the VIPLite bridge
+
+Add the real bridge source, headers/dependency acquisition instructions, build command, and runtime invocation. Explain tensor allocation/layout, input/output copies, execution, output interpretation, cleanup, and error propagation.
+
+Include actual VIPLite execution counters or equivalent retained evidence showing physical NPU use. A successful Python call alone must not be treated as proof of NPU execution.
+
+### Step 8 — Run the CPU-verified OCR pipeline
+
+Add the actual OCR entry point and a small runnable example. Explain text-region extraction, orientation handling, fixed-width eligibility, CPU wide-line handling, CTC decoding, dictionary use, confidence calculation, and reading order.
+
+Show that canonical CPU recognition checks every crop and supplies the final result, including agreeing crops. Report CPU verification calls separately from disagreement corrections. Document persistent-engine creation, sequential calls, close/recreation, and recovery after inference failures.
+
+### Step 9 — Reproduce full-frame detection improvements
+
+Add the real high-resolution preprocessing, overlapping tile/map blending, cached-map recovery, original-resolution recognition, retry constraints, and geometric reading-order code. Explain where the reported 2,080-pixel long side, 736-pixel tiles, and 672-pixel stride apply and how smaller frames are handled.
+
+Include shareable PAPER and SCREEN examples and reference text. Keep OCR text-region crops and internal detector tiles distinct from any separate application image-answering path.
+
+### Step 10 — Validate correctness and recovery
+
+Add commands and expected outputs for floating-point conversion checks, quantized comparisons, simulator/hardware parity, repeated recognizer execution, complete OCR fixtures, invalid inputs, injected NPU failures, and subsequent recovery.
+
+Tie every claimed result to the model/configuration and fixture hashes used. Distinguish byte parity, CPU-reference agreement, human-reference accuracy, and repeatability. Preserve missing evidence as a documented limitation.
+
+### Step 11 — Benchmark comparable execution paths
+
+Add the actual benchmark runner and measurement protocol. State warm-up, run count, thread configuration, engine-construction treatment, timing boundaries, CPU-time collection, image dimensions, and accuracy profile.
+
+Report individual model inference separately from complete OCR latency. Include the selected CPU-verified path and, where available, matched CPU-only and experimental full-NPU comparisons on identical inputs. If a matched CPU-only benchmark has not been run, keep that gap explicit rather than asserting a speedup.
+
+### Step 12 — Package the release
+
+Provide a small OCR-focused example and the files needed to rebuild or obtain the selected models. Keep Visual AI integration limited to the OCR worker/bridge details needed to understand this port.
+
+Exclude credentials, private configuration, private captures, personal course material, full application backups, and unrelated application components. Record provenance and redistribution terms for released material. Select a repository license only after the project owner has chosen it and third-party obligations are understood.
+
+### Completion criteria
+
+The implementation guide becomes runnable only after real source files replace these collection notes, commands are checked against the actual toolchain, model and fixture identities are recorded, and the stated tests have retained results. A rebuild on the original development setup and a fresh-environment reproduction are separate milestones and must be reported separately.
+
+Each completed step should contain: the real source-file link, a brief explanation, exact commands with execution location, required inputs and resulting artifacts, verification output, and any remaining limitations. Historical results remain historical until rerun against the published implementation.
