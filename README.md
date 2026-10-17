@@ -4,33 +4,26 @@
 
 ## Publication status and public paths
 
-This README combines the engineering paper with code excerpts and the rebuild/execution commands supplied from the project record. Commands are placed next to the stages they explain, rather than collected only at the end.
+Updated 16 October 2026. This paper now accompanies a downloadable source and command supplement: [public source release](https://github.com/sog777/orange-pi-zero-3w-rapidocr-npu/releases).
 
-**The complete sources, models, compiler artifacts, SDK dependencies, and test fixtures have not yet been uploaded to this repository.** The inventory below describes files reported as retained in the development project; it is not a list of downloads currently available here. These examples are therefore conditional instructions for the forthcoming source supplement, not a tested fresh-install tutorial. No commands were executed on the target board while preparing this revision.
+The supplement contains **3,143 readable source records**, **2,523 retained command records**, source/model provenance, checksums, runtime code, graph rewrites, Visual AI integration and regression reports. The command collection includes comments, fragments and intended instructions; it is not a complete chronological terminal history.
 
-Use the same generic project root on the compiler host and the board:
+**Excluded:** original test/camera images; proprietary `vip_lite.h`; 312 vendor-generated C/header files with unverified redistribution terms; both compiled NBG model files (`detector.nb` and `recognizer.nb`). Commands referencing these materials remain documented and require readers to supply private fixtures or generate outputs locally with an authorized compatible SDK. This is an engineering source supplement, not a turnkey NPU installation.
 
-```sh
-cd "$HOME/orange-pi-zero-3w-rapidocr-npu"
-```
+Unzip the source asset; its code is under `rapidocr-npu/`. The corrected package consistently uses `/home/user/rapidocr-npu` as a generic board project path. Replace `/home/user` with your account home in scripts and service files before installation. The repository checkout name and the extracted code-directory name differ intentionally.
 
-The path above is a public layout convention, not an installation command. A clone currently provides this documentation, not the missing runtime or models. If you store the release elsewhere, substitute your own checkout root. Do not use another developer's Mac home directory, SSH alias, dated workspace, or private application folder.
-
-| Public location relative to the project root | Contents and purpose |
+| Extracted location | Contents |
 |---|---|
-| `runtime/` | Standalone OCR sessions, native bridge, launcher, validators, and pinned requirements |
-| `venv/` | Board-side Python environment expected by the supplied validator commands |
-| `runtime/models/` | NBGs, tensor metadata, canonical ONNX models, and vocabulary |
-| `runtime/compiler/` | Saved production ACUITY graph, weights, quantization, input metadata, and rebuild script |
-| `runtime/samples/` | Redistributable reference fixtures |
-| `integration/visual_ai/` | Optional OCR integration adapter, persistent worker, and accuracy modules |
-| `work/` | Retained conversion sources and clearly identified historical experiments |
+| `rapidocr-npu/runtime/` | `npu_ocr.py`, native bridge, installation script, validators, compiler metadata |
+| `rapidocr-npu/visual_ai/` | Visual AI backend, persistent worker, `ocr_accuracy/`, launchers and service definitions |
+| `rapidocr-npu/work/` | Conversion/rewrite scripts, production accuracy code, rejected experiments and reports |
+| `SOURCE_MANIFEST.json` | Shipped readable source hashes and byte counts |
+| `COMMAND_RECORD.json` and `.txt` | Retained instructions with file and line provenance |
+| `MODEL_ARTIFACT_MANIFEST.json` | Included model/reference artifacts and provenance |
+| `EXCLUDED_ARTIFACTS.json` | Withheld vendor outputs and historical hashes |
+| `PACKAGE_SHA256SUMS` | Authoritative checksums for shipped supplement files |
 
-Actual source basenames and API names such as `luna_ocr.py`, `pai_ocr_backend.py`, `PAI_OCR_BACKEND`, and `run_luna_assistant.sh` are retained for compatibility. They are not personal directory paths. Renaming them without updating their callers would break the examples. The public application name is **Visual AI**.
-
-**Public-path migration must also be applied inside the source supplement.** Changing this README does not change hard-coded paths in scripts, imports, compiler metadata, launchers, or service definitions. Those dependencies must be inspected and changed to checkout-relative paths or documented configuration before the package is described as portable.
-
-The project identifies its models as PP-OCRv6. Exact upstream identifiers, model hashes, and dictionary provenance must accompany the release; this documentation revision does not independently establish model identity.
+Project-authored code has no blanket reuse license assigned; retain all third-party notices. See the package's model/license inventory. Public path adaptations and syntax checks were verified, but no hardware tests or clean-system provisioning were rerun for this publication revision. Production and private backups were not changed.
 
 ### Abstract
 
@@ -90,11 +83,9 @@ The compiled ARM64 runtime bridge cannot execute directly on macOS.
 
 ### 1.1 Environment setup boundary
 
-The supplied inventory names `runtime/install.sh` and `runtime/requirements.txt`, but does not include their contents or the exact environment-creation and installation command history. Installing the Python dependencies alone does not install the Vivante driver, runtime libraries, SDK, or headers. The pinned versions in the table describe the reported OCR environment; they are not a guarantee that those packages can be installed on every image.
+The full `runtime/install.sh` and pinned `runtime/requirements.txt` are included in the supplement. The installer creates `../venv`, installs Python requirements, builds the ARM64 bridge, then runs self-tests. It requires an authorized `vip_lite.h` via `VIPLITE_INCLUDE_DIR` and compatible installed vendor libraries. It also requires locally generated NBGs and the fixtures used by its validators; those dependencies are not automatically supplied.
 
-Before running the examples, the source supplement must document board permissions for `/dev/vipcore`, vendor library/header acquisition and compatibility, Python environment creation, and the compiler image's provenance. `ubuntu-npu:v2.0.10.2` below is the existing local compiler image tag used in the project, not a verified public image download.
-
-**Not supplied:** the complete installation transcript, known-good initial NBG invocation, and tested clean-system provisioning instructions. These must come from the original scripts and records rather than guessed package or driver commands.
+The original compiler image tag `ubuntu-npu:v2.0.10.2` describes an existing local SDK environment, not a verified public download. Driver provisioning, compatible SDK acquisition and a fresh-OS installation remain outside this release's tested scope.
 
 ## 2. Why Installing RapidOCR Was Not Enough
 
@@ -194,9 +185,9 @@ The later production accuracy profile reuses this same detector binary multiple 
 
 ### 4.1 Detector rebuild materials
 
-The public package must include the actual detector import, static-shape conversion, calibration, quantization, and export commands with their input-model hashes and preprocessing configuration. Codex's supplied text does not contain those commands. The recognizer re-export command in Section 9 does not rebuild the detector.
+Detector conversion sources and historical commands are retained under `work/` and indexed in `COMMAND_RECORD.json`. The source ONNX provenance and detector export hash are documented in `MODEL_SOURCES_AND_LICENSES.md`. The compiled detector NBG is withheld pending verification of vendor-output terms. The recognizer re-export in Section 9 does not rebuild the detector, and the command collection does not establish a complete original execution chronology.
 
-The recorded early detector inference was approximately 27.7 ms, with a 100-run execution test. This is a historical detector-only measurement, not complete OCR latency.
+The early detector-only measurement was approximately 27.7 ms with a 100-run execution test. It is not complete OCR latency.
 
 ## 5. Static Recognizer Conversion
 
@@ -305,9 +296,9 @@ The saved transformed ONNX graphs and final ACUITY compiler graph preserve these
 
 ### 6.5 Reproducing the transformation sequence
 
-The retained script inventory identifies `rewrite_allstride2_maxpool.py`, `rewrite_conv5_mulsum.py`, `rewrite_conv40_outsplit2.py`, and `rewrite_layernorm_mul.py`. Their command-line arguments were not supplied with this text. Do not assume they all accept the same input/output flags or invent an invocation from their filenames.
+Complete rewrite scripts are included under `work/assistant_layernorm_research/`: `rewrite_allstride2_maxpool.py`, `rewrite_conv5_mulsum.py`, `rewrite_conv40_outsplit2.py` and `rewrite_layernorm_mul.py`. Their retained commands and provenance are indexed in the supplement. Inspect their actual argument parsing rather than assuming identical CLI flags.
 
-The source supplement must provide the exact execution order, input/output graph hashes, changed-node counts, tensor shapes, weight mappings, and numerical checks. The four scripts alone do not reconstruct the complete cumulative model: Pad/Add reconstruction, affine restructuring, and some LayerNorm changes remain represented in saved cumulative graphs or compiler artifacts. Section 9 documents re-export of that saved production graph, which is a narrower operation than rebuilding it from an upstream ONNX model.
+The four scripts alone do not reconstruct every cumulative transformation. Pad/Add reconstruction, affine restructuring and some LayerNorm work are preserved in cumulative ONNX/compiler graphs and historical records. Re-exporting the saved recognizer compiler graph is narrower than a fully automated upstream-ONNX-to-production rebuild. Generated vendor C/header outputs are excluded; generate them locally with an authorized SDK.
 
 ## 7. The LayerNorm Divide Breakthrough
 
@@ -492,7 +483,7 @@ The `/root/acuity-toolkit-whl-6.30.22/` and `/root/Vivante_IDE/` paths are SDK l
 
 This operation reuses `model.quantize`; it does not repeat calibration. Recalibration requires the actual dataset manifest and valid calibration paths in `inputmeta.yml`. The expected export location is `runtime/compiler/rebuilt/`; the exact NBG selection, copy to `runtime/models/recognizer.nb`, metadata generation, and hashes must be documented from `rebuild.sh` before claiming a complete rebuild.
 
-**Not supplied:** exact upstream-model import commands, dynamic-to-static invocation, calibration commands, all historical graph-edit invocations, and the complete detector build. These remain release gaps even though a saved production graph can be re-exported.
+The supplement now includes retained conversion/build scripts and command provenance. It does not recover an unrecorded terminal chronology or establish a tested complete clean-system rebuild. Both NBG binaries and flagged generated C/header outputs are excluded from public distribution.
 
 ## 10. The VIPLite Runtime Bridge
 
@@ -570,21 +561,17 @@ The complete bridge also contains initialization, buffer-property queries, size-
 
 ### 10.1 Build the native bridge — RUN ON BOARD
 
-On a matching ARM64 board, after obtaining compatible vendor libraries and the required headers, start from the public project root and enter the supplied runtime directory:
+After extracting the supplement and obtaining compatible ARM64 vendor libraries and authorized SDK headers:
 
 ```sh
-cd "$HOME/orange-pi-zero-3w-rapidocr-npu/runtime"
+cd "$HOME/rapidocr-npu/runtime"
+export VIPLITE_INCLUDE_DIR=/path/to/authorized/viplite/include
 cc -O2 -fPIC -shared -Wall -Wextra -Werror \
-  -Iinclude \
-  vip_bridge.c \
-  -lNBGlinker \
-  -lVIPhal \
-  -o librapidocr_vip.so
+  -I"$VIPLITE_INCLUDE_DIR" -Iinclude vip_bridge.c \
+  -lNBGlinker -lVIPhal -o librapidocr_vip.so
 ```
 
-This is the supplied bridge build command with a generic working directory. It produces `runtime/librapidocr_vip.so`. The `-Iinclude` argument resolves to `runtime/include/`; `-lNBGlinker` and `-lVIPhal` require the compatible vendor libraries to be available to the toolchain and runtime loader. Header/library redistribution rights must be handled separately.
-
-Do not run the ARM64 bridge on macOS or mistake this native runtime build for the x86-64 compiler export. The complete `vip_bridge.c`, not only the excerpt above, is needed for compilation.
+Replace the SDK placeholder with your local authorized header directory. `vip_lite.h` is deliberately not distributed. The complete project bridge source is included. This command builds the runtime bridge; it does not generate either excluded NBG or install the driver.
 
 ## 11. Physical Execution and Numerical Validation
 
@@ -632,13 +619,13 @@ Byte-for-byte parity on one fixture and 100 stable repetitions establish reprodu
 With the complete runtime, models, fixtures, and board-side `venv/` installed, run from `runtime/`:
 
 ```sh
-cd "$HOME/orange-pi-zero-3w-rapidocr-npu/runtime"
+cd "$HOME/rapidocr-npu/runtime"
 ../venv/bin/python selftest.py --runs 100
 ../venv/bin/python validate_verified.py
 ../venv/bin/python validate_pipeline.py
 ```
 
-`selftest.py --runs 100` performs the repeated recognizer/reference-output test. `validate_verified.py` checks canonical equivalence and inference-failure recovery. `validate_pipeline.py` performs the separately defined pipeline comparison. Their full implementations must define fixture selection, expected outputs, and result-artifact locations. A validator's exit status or successful execution is not a substitute for examining its reported comparisons.
+`selftest.py --runs 100` performs the repeated recognizer/reference-output test. `validate_verified.py` checks canonical equivalence and inference-failure recovery. `validate_pipeline.py` performs the separately defined pipeline comparison. Their full implementations are included and define fixture selection, expected outputs, and result-artifact locations. The corrected `selftest.py` compares `actual_raw.tobytes(order="C")` with the reference file bytes before reporting `vendor_runner_byte_exact: true`. Original image-based validators require private fixtures; the numeric parity fixtures are included, but both NBGs must be generated locally. A validator's exit status or successful execution is not a substitute for examining its reported comparisons.
 
 The model and fixture hashes must match the corresponding historical records before comparing against the checksum above. New compiler exports or different fixtures may produce different checksums; do not overwrite a reference merely to make a test pass.
 
@@ -684,18 +671,18 @@ Separate experiments implemented genuinely NPU-only recognition without those fa
 This is the supplied standalone launch workflow with the private SSH alias and dated project directory removed. Connect to your own board using your normal SSH configuration, then run:
 
 ```sh
-cd "$HOME/orange-pi-zero-3w-rapidocr-npu/runtime"
+cd "$HOME/rapidocr-npu/runtime"
 sh run.sh samples/test_page.jpg
 ```
 
-The fixture must be supplied or replaced with your own permitted image. The complete `run.sh` must select the documented verified mode. This standalone command does **not** automatically exercise the application's full-frame accuracy wrapper.
+The fixture must be supplied or replaced with your own image; original test images are not publicly distributed. The supplied `run.sh` defaults to verified recognition. This standalone command does **not** automatically exercise the application's full-frame accuracy wrapper.
 
 ### 12.2 Use the verified engine from Python — RUN IN THE BOARD OCR ENVIRONMENT
 
 From `runtime/`, using the Python environment expected by the supplied sources:
 
 ```python
-from luna_ocr import build_ocr, close_ocr
+from npu_ocr import build_ocr, close_ocr
 
 ocr = build_ocr("verified")
 
@@ -708,7 +695,7 @@ finally:
     close_ocr(ocr)
 ```
 
-Here `samples/frame.jpg` is a reader-selected image relative to `runtime/`, not a claim that the repository currently contains that file. Keep one engine alive across sequential frames to avoid rebuilding it for every image, and close it when finished. The source module name `luna_ocr` is retained because it is the actual supplied API name.
+Here `samples/frame.jpg` is a reader-selected image relative to `runtime/`, not a claim that the repository currently contains that file. Keep one engine alive across sequential frames to avoid rebuilding it for every image, and close it when finished. The source module name `npu_ocr` is retained because it is the actual supplied API name.
 
 ## 13. Earlier Page-Level Validation
 
@@ -796,12 +783,12 @@ These heuristics improved the tested cases but are not guaranteed to detect ever
 
 ### 14.4 Use the deployed accuracy wrapper — OPTIONAL INTEGRATION EXAMPLE
 
-The supplied adapter API is shown below. The forthcoming public layout places it in `integration/visual_ai/`. Its adapter imports and runtime/model discovery must first be made checkout-relative; moving the files alone is not sufficient.
+The supplied adapted backend is in `visual_ai/visual_ai_ocr_backend.py`. Review its generic `/home/user/rapidocr-npu` paths for your account before using it.
 
-Run in the compatible board-side application environment with `pai_ocr_backend.py` importable:
+Run in the compatible board-side application environment with `visual_ai_ocr_backend.py` importable:
 
 ```python
-from pai_ocr_backend import create_ocr_engine, close_ocr_engine
+from visual_ai_ocr_backend import create_ocr_engine, close_ocr_engine
 
 ocr = create_ocr_engine(accuracy=True)
 
@@ -817,7 +804,7 @@ finally:
 
 `samples/frame.jpg` is an example image path relative to the current working directory. Explicit `source_mode="PAPER"` avoids relying on a PAPER filename convention; use the supported SCREEN mode for SCREEN inputs. This example invokes the OCR adapter, not the answering, speech, or camera application.
 
-The retained `luna_accuracy/` modules implement the tiling, cache, recovery, retry, and reading-order behavior described above. The complete modules and their configuration defaults are required; this short invocation is not a reimplementation of those algorithms.
+The retained `ocr_accuracy/` modules implement the tiling, cache, recovery, retry, and reading-order behavior described above. The complete modules and their configuration defaults are required; this short invocation is not a reimplementation of those algorithms.
 
 ## 15. Six-Frame Before/After Results
 
@@ -1127,31 +1114,29 @@ The recognition worker selects the deployed accuracy profile by default. Detecti
 The configuration supports:
 
 ```text
-PAI_OCR_BACKEND=auto | orangepi | cpu
-PAI_OCR_PROFILE=accuracy | baseline
+VISUAL_AI_OCR_BACKEND=auto | orangepi | cpu
+VISUAL_AI_OCR_PROFILE=accuracy | baseline
 ```
 
 The baseline option provides rollback without changing the NPU models.
 
 ### 21.1 Optional Visual AI launcher — PUBLIC-PATH ADAPTATION
 
-The historical application launcher is `run_luna_assistant.sh`. If an optional, sanitized integration package is provided under `integration/visual_ai/`, its public-path launch example is:
+The adapted application launcher and backend are included under `visual_ai/`. After provisioning its separate answering, speech, configuration and model dependencies and adapting `/home/user/rapidocr-npu` to your account:
 
 ```sh
-cd "$HOME/orange-pi-zero-3w-rapidocr-npu/integration/visual_ai"
-sh run_luna_assistant.sh
+cd "$HOME/rapidocr-npu/visual_ai"
+sh run_visual_ai.sh
 ```
 
-This is a path-adapted form of the supplied historical launch command, not a newly verified deployment. The launcher and any service definitions must be updated to discover the runtime under the public root before using it. The full Visual AI application, answering models, credentials, knowledge database, Bluetooth setup, and camera configuration are not prerequisites for the standalone OCR examples and are not claimed to be included in this repository.
-
-The public application name is **Visual AI**. Existing source basenames and environment-variable names remain compatibility interfaces until the actual code is migrated.
+This remains a public-path adaptation, not a newly verified deployment. Credentials, private knowledge databases, voice weights, answering GGUF and Bluetooth pairing are not bundled.
 
 ### 21.2 Resident offline answering service
 
 The offline answering server was moved into a persistent systemd user service:
 
 ```text
-luna-offline-answering.service
+visual-ai-offline-answering.service
 ```
 
 With user lingering enabled, the server starts after boot without requiring an SSH login, loads its model once, remains resident between Visual AI runs, restarts after a crash, and logs to the journal.
@@ -1163,6 +1148,17 @@ Saved verification records report 22 lifecycle and reboot checks passing, exactl
 The normal health gate was approximately 0.16 seconds.
 
 This answering model remains CPU-based. Its residency improvement is separate from NPU OCR acceleration.
+
+After adapting paths and provisioning the offline model/server dependencies, install the service file **before** enabling it:
+
+```sh
+mkdir -p "$HOME/.config/systemd/user"
+install -m 0644 "$HOME/rapidocr-npu/visual_ai/systemd_user_services/visual-ai-offline-answering.service" "$HOME/.config/systemd/user/visual-ai-offline-answering.service"
+systemctl --user daemon-reload
+systemctl --user enable --now visual-ai-offline-answering.service
+```
+
+These are conditional setup instructions. User lingering is a separate host setting required for startup without an interactive login.
 
 ### 21.3 Deployment validation boundaries
 
@@ -1295,19 +1291,17 @@ External sources establish platform context, not independent confirmation of the
 - [A733 NPU driver project](https://github.com/petayyyy/a733_npu_driver/blob/main/README.md) and [Radxa-to-Orange-Pi deployment notes](https://github.com/petayyyy/a733_npu_driver/blob/main/docs/07-porting-radxa-to-orangepi.md).
 - [Related Vivante NPU implementation](https://github.com/unnamedwild-ux/frigate_npu_vivante).
 
-The project record identifies `selftest_result.json`, `verified_validation.json`, `pipeline_validation.json`, `verification/simulator_parity.json`, `ASSISTANT_LAYERNORM_FINDINGS_2026-10-03.txt`, `assistant-layernorm-comparison.md`, `OCR_ACCURACY_DEPLOYMENT_REPORT.md`, `FULL_NPU_EXPERIMENT_REPORT.md`, and `NPU_MIGRATION_FOLLOWUP.md` as supporting evidence. These records are not yet uploaded here. A public supplement should bind each report to the exact source revision, model hashes, fixtures, and measurement protocol it describes.
+The project record identifies `selftest_result.json`, `verified_validation.json`, `pipeline_validation.json`, `verification/simulator_parity.json`, `ASSISTANT_LAYERNORM_FINDINGS_2026-10-03.txt`, `assistant-layernorm-comparison.md`, `OCR_ACCURACY_DEPLOYMENT_REPORT.md`, `FULL_NPU_EXPERIMENT_REPORT.md`, and `NPU_MIGRATION_FOLLOWUP.md` as supporting evidence. These retained records are distributed in the source supplement. Use its source/model manifests and per-report scope; original image fixtures remain private.
 
 # Appendix A — Code and Artifact Inventory
 
-**The following inventory describes sources reported as retained in the development project.** Their paths have been mapped to the generic public layout. These are not active download links, and the listed files are not yet included in this repository.
-
-For publication, distribute a versioned, rights-cleared source supplement. Verify the source contents and path migration before turning these inventory entries into repository links.
+The following inventory uses paths inside the downloadable source supplement. Files are supplied there rather than as individual repository-tree entries. Exclusions are documented in `EXCLUDED_ARTIFACTS.json`.
 
 ## A.1 Production OCR runtime
 
 | File | Purpose |
 |---|---|
-| `runtime/luna_ocr.py` | Complete Python VIPLite sessions, quantization, CTC comparison, verified policy, construction and CLI |
+| `runtime/npu_ocr.py` | Complete Python VIPLite sessions, quantization, CTC comparison, verified policy, construction and CLI |
 | `runtime/vip_bridge.c` | Complete native VIPLite bridge |
 | `runtime/install.sh` | Environment installation, bridge compilation and validation |
 | `runtime/run.sh` | Standalone OCR launcher |
@@ -1317,7 +1311,7 @@ For publication, distribute a versioned, rights-cleared source supplement. Verif
 | `runtime/validate_verified.py` | Canonical equivalence and inference-failure recovery |
 | `runtime/validate_pipeline.py` | Separate pipeline comparison |
 
-The required runtime package would contain the following artifacts (not currently uploaded):
+The runtime requires the following artifacts. Most sources/metadata are included in the supplement; NBGs and the proprietary header are excluded and the native library must be built locally:
 
 | Runtime-relative location | Required artifacts |
 |---|---|
@@ -1325,7 +1319,7 @@ The required runtime package would contain the following artifacts (not currentl
 | `librapidocr_vip.so` | ARM64 bridge built from the complete source |
 | `models/` | `detector.nb`, `detector.json`, `recognizer.nb`, `recognizer.json`, `canonical_recognizer.onnx`, `classifier.onnx`, `characters.txt` |
 | `compiler/` | `model.json`, `model.data`, `model.quantize`, `inputmeta.yml`, `rebuild.sh` |
-| `samples/` | Redistributable inputs used by the validators and examples |
+| `samples/` | Numeric parity tensors only; original images remain private |
 | `verification/` | Reference outputs and comparison records |
 | `SHA256SUMS` | Checksums tied to the released artifacts |
 
@@ -1384,7 +1378,7 @@ These files include successful builds and rejected experiments. Their presence d
 
 ## A.3 Deployed full-frame accuracy code
 
-The reported accuracy package, mapped to `integration/visual_ai/luna_accuracy/`, comprises:
+The reported accuracy package, mapped to `visual_ai/ocr_accuracy/`, comprises:
 
 ```text
 __init__.py
@@ -1410,8 +1404,8 @@ Their responsibilities are:
 
 The deployed integration sources are:
 
-- `integration/visual_ai/pai_ocr_backend.py`
-- `integration/visual_ai/rapidocr_worker.py`
+- `visual_ai/visual_ai_ocr_backend.py`
+- `visual_ai/rapidocr_worker.py`
 
 The backend selects the verified runtime and accuracy wrapper. The worker preserves the original detection-only alignment profile and maintains recognition counters.
 
@@ -1465,11 +1459,11 @@ Ground truth belongs to evaluation code and must not be imported into the produc
 
 ## Command coverage and remaining reconstruction gaps
 
-All seven workflow examples supplied in Codex's command appendix are included above: saved recognizer re-export, native bridge compilation, standalone validation, standalone verified OCR, verified Python engine use, accuracy-wrapper use, and optional Visual AI launch. The lower-level Pegasus export command is also included. Working-directory setup has been added to make path assumptions explicit.
+The downloadable supplement preserves **2,523 retained command records**, including complete scripts and command-like lines with source/line provenance. It spans conversion, graph rewrites, calibration, compilation, validators, regression, experiments and service/camera work. Comments, duplicates, fragments and intended commands are explicitly distinguished from proof of execution. A complete chronological terminal transcript was not retained.
 
-This is **not the complete development command history**. It does not yet include exact provisioning, original detector/recognizer imports, calibration, all cumulative graph rewrites, model installation, accuracy/regression runner invocations, experimental rebuilds, fault-injection invocations, or optional service/camera setup commands. Their named source files and reports must be supplied and inspected before those steps can be documented accurately. Some retired experiments also require rebuilding deleted generated artifacts.
+The corrected package fixes 180 stale source byte counts, updates the runtime integration notes, installs the service before enabling it, performs actual byte comparison in `selftest.py`, and corrects camera recovery paths. After removing 312 flagged vendor-generated source files, the supplement has 3,143 readable source records. Both compiled NBGs are also withheld. Included sources and all package checksums pass structural checks; hardware tests were not rerun.
 
-Before describing this as a reproducible public release, include the real sources and a checked command sequence for each stage. Every stage should state execution location, inputs, outputs, expected verification, and limitations. Preserve the distinction between historical results, reproduction on the original environment, and a separately tested clean installation. Never present a filename inventory or code excerpt as proof that the full conversion can already be reproduced.
+Private images are not required for publication and are not included. Image-based validation commands remain available for readers who provide their own fixtures; different fixtures cannot reproduce the original numerical accuracy claims. An authorized SDK, compatible driver/runtime, locally generated binaries and separately provisioned application dependencies remain necessary.
 
 # Appendix B — Public Release Completion Checklist
 
